@@ -37,9 +37,10 @@ bot.onText(/\/help/, function (msg) {
 bot.onText(/\/quote (.+)/, function (msg, match) {
   var fromName = msg.from.last_name;
   var user = msg.from.id;
+  var time = msg.date;
   var text = match[1];
   var opts = {reply_to_message_id: msg.message_id};
-  var len = quotesArr.push({id:user, name:fromName, content:text});
+  var len = quotesArr.push({id:user, name:fromName, content:text, created_at: time});
 
   bot.getUserProfilePhotos(user).then(function(profilePhoto){
     //get medium quality photo
@@ -48,7 +49,7 @@ bot.onText(/\/quote (.+)/, function (msg, match) {
     bot.getFile(fileid).then(function(file){
       console.log(file.file_path);
       //TODO: send photo link over for display
-      sendQuote(fromName, text);
+      sendQuote(fromName, text, time);
       quotesArr[len -1].photo = file.file_path;
       sendMsgToUser(user, 'Done! Your quote will be shown on the board!');
     });
@@ -74,9 +75,10 @@ bot.on('photo', function (msg) {
 });
 
 bot.start = function startRandomQuotes(){
+  var timeNow = Math.floor(Date.now() / 1000);
   //start cycling thru quotes after 5 secs
   timeout = setTimeout(function(){
-    sendQuote('speakerbot', 'board ready');
+    sendQuote('speakerbot', 'board ready', timeNow);
     timeInterval = setInterval(RandomQuote, 10000);
   }, 5000);
 }
@@ -87,8 +89,8 @@ bot.stop = function stopRandomQuotes(){
 }
 
 
-function sendQuote(user, content){
-  var quote =  {  user: {name: user}, text: content}
+function sendQuote(user, content, time){
+  var quote =  {  user: {name: user}, text: content, created_at: time}
   io.emit('quote sent', quote);
 }
 
@@ -101,7 +103,7 @@ function RandomQuote(){
   if (len > 1){
     var rand = Math.floor((Math.random() * len));
     // sendMsgToUser(quotesArr[rand].user, 'your quote is shown now!');
-    sendQuote(quotesArr[rand].name, quotesArr[rand].content);
+    sendQuote(quotesArr[rand].name, quotesArr[rand].content, quotesArr[rand].created_at);
   }
 }
 

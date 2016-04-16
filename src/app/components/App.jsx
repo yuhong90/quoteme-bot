@@ -6,10 +6,9 @@ export default class App extends React.Component {
   constructor(props) {
     super(props);
 
-    var today = new Date();
-    var UTCstring = today.toUTCString();
+    var timeNow = Math.floor(Date.now() / 1000);
 
-    this.state = { quote: { created_at: UTCstring, user: {name: 'account'}, text: 'Waiting for quote...' } };
+    this.state = { quote: { created_at: timeNow, user: {name: 'account'}, text: 'Waiting for quote...' } };
   }
 
   componentDidMount() {

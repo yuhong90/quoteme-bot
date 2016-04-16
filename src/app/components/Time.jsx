@@ -34,7 +34,7 @@ export default class Time extends React.Component {
 
   updateTime() {
     let quote = this.props.quote;
-    let t = new Date(Date.parse(quote.created_at));
-    this.setState({ relativeTime: Moment(t).fromNow() });
+    let t = quote.created_at;
+    this.setState({ relativeTime: Moment.unix(t).fromNow() });
   }
 }
