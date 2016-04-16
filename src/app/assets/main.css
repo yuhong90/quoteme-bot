@@ -35,6 +35,11 @@ time {
   font-weight: 400;
 }
 
+.profilePhoto {
+  width: 100px;
+  border-radius: 30px;
+}
+
 @media screen and (min-width: 1920px) {
   body {
     padding: 0 10rem;
