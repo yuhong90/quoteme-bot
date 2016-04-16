@@ -6,7 +6,8 @@ const server = new Hapi.Server();
 server.connection({ port: 3000 });
 
 const io = require('socket.io')(server.listener);
-const speakerbot = require('./bot');
+const speakerbot = require('./utils/telegram-bot');
+speakerbot.setup(io);
 
 server.register([{
     register: WebpackPlugin,
@@ -37,5 +38,9 @@ server.register([{
   });
 });
 
-speakerbot(io);
+io.on('connection', function(socket) {
+  console.log('Client connected from ' + socket.request.connection.remoteAddress);
+});
+
+speakerbot.getMe();
 speakerbot.start();
