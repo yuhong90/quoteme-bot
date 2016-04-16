@@ -7,6 +7,11 @@ export default class Time extends React.Component {
 
     this.state = { relativeTime: '' };
   }
+
+  componentWillMount() {
+    this.updateTime();
+  }
+
   componentDidMount() {
     this.interval = setInterval(this.updateTime.bind(this), 60000);
   }
@@ -28,8 +33,8 @@ export default class Time extends React.Component {
   }
 
   updateTime() {
-    let tweet = this.props.tweet;
-    let t = new Date(Date.parse(tweet.created_at));
+    let quote = this.props.quote;
+    let t = new Date(Date.parse(quote.created_at));
     this.setState({ relativeTime: Moment(t).fromNow() });
   }
 }

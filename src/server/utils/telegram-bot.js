@@ -48,7 +48,7 @@ bot.onText(/\/quote (.+)/, function (msg, match) {
     bot.getFile(fileid).then(function(file){
       console.log(file.file_path);
       //TODO: send photo link over for display
-      sendTweet(fromName, text);
+      sendQuote(fromName, text);
       quotesArr[len -1].photo = file.file_path;
       sendMsgToUser(user, 'Done! Your quote will be shown on the board!');
     });
@@ -76,7 +76,7 @@ bot.on('photo', function (msg) {
 bot.start = function startRandomQuotes(){
   //start cycling thru quotes after 5 secs
   timeout = setTimeout(function(){
-    sendTweet('speakerbot', 'board ready');
+    sendQuote('speakerbot', 'board ready');
     timeInterval = setInterval(RandomQuote, 10000);
   }, 5000);
 }
@@ -87,9 +87,9 @@ bot.stop = function stopRandomQuotes(){
 }
 
 
-function sendTweet(user, content){
-  var tweet =  {  user: {name: user}, text: content}
-  io.emit('tweet sent', tweet);
+function sendQuote(user, content){
+  var quote =  {  user: {name: user}, text: content}
+  io.emit('quote sent', quote);
 }
 
 function sendMsgToUser(fromId, resp){
@@ -101,7 +101,7 @@ function RandomQuote(){
   if (len > 1){
     var rand = Math.floor((Math.random() * len));
     // sendMsgToUser(quotesArr[rand].user, 'your quote is shown now!');
-    sendTweet(quotesArr[rand].name, quotesArr[rand].content);
+    sendQuote(quotesArr[rand].name, quotesArr[rand].content);
   }
 }
 
