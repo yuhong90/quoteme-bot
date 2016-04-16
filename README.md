@@ -1,21 +1,14 @@
-#Telegram Quote Bot
+# Telegram Quote Bot
 
 Simple Telegram bot to send quotes to a React front-end
 
-
-# Basic Hapi and React starter
-
-Simple starter kit for writing React apps in ES2015 with ESlint.
-
-Uses Hapi as a HTTP server, which registers a webpack middleware plugin for HMR.
-
-Follows [http://survivejs.com/](http://survivejs.com/) closely.
+## Getting started
 
 ### Start Dev Server
 ```javascript
 npm start
 ```
-Runs Hapi at [http://localhost:3000](http://localhost:3000) using nodemon.
+Runs Hapi server at [http://localhost:3000](http://localhost:3000) using pm2.
 Making changes to server.js will automatically restart the process.
 Making change to your React app will trigger hot reload.
 
@@ -24,3 +17,10 @@ Making change to your React app will trigger hot reload.
 npm run build
 ```
 Compiles /build folder
+
+## Upcoming features
+
+## Changelog
+
+* 0.1.0
+  Stable version
