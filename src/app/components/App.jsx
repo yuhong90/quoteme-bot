@@ -13,7 +13,7 @@ export default class App extends React.Component {
 
   componentDidMount() {
     const socket = IO();
-    socket.on('quote sent', (quote) => {
+    socket.on('quote sent', (quote) => { 
       this.addQuote(quote);
     });
   }

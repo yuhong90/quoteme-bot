@@ -50,7 +50,7 @@ bot.onText(/\/quote (.+)/, function (msg, match) {
       //TODO: send photo link over for display
       var photoURL = telegram_filepath + bot.token +'/'+ file.file_path;
       console.log(photoURL);
-      sendQuote(fromName, text, time);
+      sendQuote(fromName, text, time, photoURL);
       quotesArr[len -1].photo = photoURL;
       sendMsgToUser(user, 'Done! Your quote will be shown on the board!');
     });
@@ -67,11 +67,15 @@ bot.onText(/\/echo (.+)/, function (msg, match) {
 
 bot.on('photo', function (msg) {
   var chatId = msg.chat.id;
+  var fromName = msg.from.last_name;
   var photo = msg.photo[0].file_id;
+  var caption = msg.caption;
+  var time = msg.date;
 
-  bot.getFileLink(photo).then(function(fileURI){
-    console.log('Promised file: ' + fileURI);
-    //TODO: send photo over!
+  bot.getFileLink(photo).then(function(fileURI){ 
+  	console.log('promised' + fileURI); 
+    
+    sendQuote(fromName, caption, time, fileURI);
   });
 });
 
@@ -89,9 +93,8 @@ bot.stop = function stopRandomQuotes(){
   clearInterval(timeInterval);
 }
 
-
 function sendQuote(user, content, time, pic){
-  var quote =  {  user: {name: user, pic: pic}, text: content, created_at: time, }
+  var quote =  {  user: {name: user}, text: content, created_at: time, photo: pic};
   io.emit('quote sent', quote);
 }
 
