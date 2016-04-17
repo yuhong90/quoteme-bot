@@ -1,6 +1,6 @@
 const TelegramBot = require('node-telegram-bot-api');
-const token = process.env['TELEGRAM_TOKEN_2'];
-
+const token = process.env['TELEGRAM_TOKEN'];
+const telegram_filepath = 'https://api.telegram.org/file/bot';
 const bot = new TelegramBot(token, {polling: true});
 var io;
 
@@ -46,9 +46,10 @@ bot.onText(/\/quote (.+)/, function (msg, match) {
     var fileid = profilePhoto.photos[0][1].file_id;
 
     bot.getFile(fileid).then(function(file){
-      console.log(file.file_path);
       //TODO: send photo link over for display
-      sendTweet(fromName, text);
+      var photoURL = telegram_filepath + bot.token +'/'+ file.file_path;
+      console.log(photoURL);
+      sendTweet(fromName, text,photoURL);
       quotesArr[len -1].photo = file.file_path;
       sendMsgToUser(user, 'Done! Your quote will be shown on the board!');
     });
@@ -74,6 +75,7 @@ bot.on('photo', function (msg) {
 });
 
 bot.start = function startRandomQuotes(){
+	console.log('startRandomQuotes');
   //start cycling thru quotes after 5 secs
   timeout = setTimeout(function(){
     sendTweet('speakerbot', 'board ready');
@@ -86,9 +88,8 @@ bot.stop = function stopRandomQuotes(){
   clearInterval(timeInterval);
 }
 
-
-function sendTweet(user, content){
-  var tweet =  {  user: {name: user}, text: content}
+function sendTweet(user, content, pic){
+  var tweet =  {  user: {name: user, photo: pic}, text: content};
   io.emit('tweet sent', tweet);
 }
 

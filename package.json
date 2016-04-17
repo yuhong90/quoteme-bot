@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "webpack --config webpack.production.config.js",
-    "start": "pm2 start src/server/server.js"
+    "start": "pm2 start src/server/server.js --watch"
   },
   "repository": {
     "type": "git",
