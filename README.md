@@ -1,6 +1,7 @@
 # Telegram Quote Bot
 
-Simple Telegram bot to send quotes to a React front-end
+Simple Telegram bot to send quotes to a React front-end via a /quote command
+
 
 ## Getting started
 

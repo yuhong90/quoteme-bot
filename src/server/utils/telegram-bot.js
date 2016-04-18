@@ -9,16 +9,18 @@ bot.setup = function(_io){
 };
 
 var timeout, timeInterval;
-var quotesArr = [];
+var quotesArr = [];		
+const maxQuoteCount = 30;
 
 bot.getMe().then(function (me) {
   console.log('Hi my botname is %s!', me.username);
 });
 
 bot.onText(/\/start/, function (msg) {
+  var fromName = msg.from.first_name + ' ' + msg.from.last_name;
   var chatId = msg.chat.id;
   var opts = {reply_to_message_id: msg.message_id};
-  bot.sendMessage(chatId, 'Welcome ', opts);
+  bot.sendMessage(chatId, 'Welcome ' + fromName + '. Get started with /quote.', opts);
 });
 
 bot.onText(/\/help/, function (msg) {
@@ -28,7 +30,7 @@ bot.onText(/\/help/, function (msg) {
     reply_markup: JSON.stringify({
       keyboard: [
         ['/quote - share your quotes on screen'],
-        ['/echo - echo your msg']]
+        ['/echo - echo your msg to yourself']]
       })
     };
     bot.sendMessage(chatId, 'Help me help you.', opts);
@@ -40,18 +42,15 @@ bot.onText(/\/quote (.+)/, function (msg, match) {
   var time = msg.date;
   var text = match[1];
   var opts = {reply_to_message_id: msg.message_id};
-  var len = quotesArr.push({id:user, name:fromName, content:text, created_at: time});
 
   bot.getUserProfilePhotos(user).then(function(profilePhoto){
     //get medium quality photo
     var fileid = profilePhoto.photos[0][1].file_id;
 
     bot.getFile(fileid).then(function(file){
-      //TODO: send photo link over for display
       var photoURL = telegram_filepath + bot.token +'/'+ file.file_path;
-      console.log(photoURL);
       sendQuote(fromName, text, time, photoURL);
-      quotesArr[len -1].photo = photoURL;
+      storeQuote(user, fromName, text, time, photoURL);
       sendMsgToUser(user, 'Done! Your quote will be shown on the board!');
     });
   });
@@ -102,12 +101,20 @@ function sendMsgToUser(fromId, resp){
   bot.sendMessage(fromId, resp);
 }
 
+function storeQuote(user, name, content, time, photo){ 
+  if (quotesArr.length >= maxQuoteCount){
+     quotesArr.shift();
+  }
+  var len = quotesArr.push({id:user, name:name, content:content, created_at: time, photo: photo});
+  console.log('quote count: ' + len);
+}
+
 function RandomQuote(){
   var len = quotesArr.length;
   if (len > 1){
     var rand = Math.floor((Math.random() * len));
     // sendMsgToUser(quotesArr[rand].user, 'your quote is shown now!');
-    sendQuote(quotesArr[rand].name, quotesArr[rand].content, quotesArr[rand].created_at);
+    sendQuote(quotesArr[rand].name, quotesArr[rand].content, quotesArr[rand].created_at, quotesArr[rand].photo);
   }
 }
 
