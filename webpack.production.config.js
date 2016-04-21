@@ -7,7 +7,7 @@ const ExtractTextPlugin = require('extract-text-webpack-plugin');
 
 const PATHS = {
   app: path.join(__dirname, 'src/app'),
-  css: path.join(__dirname, 'src/app/css/main.css'),
+  css: path.join(__dirname, 'src/app/assets/main.css'),
   build: path.join(__dirname, 'build')
 };
 
@@ -77,11 +77,6 @@ module.exports = {
       names: ['vendor', 'manifest']
     }),
     new webpack.optimize.OccurrenceOrderPlugin(true),
-    new webpack.DefinePlugin({
-      'process.env': {
-        'NODE_ENV': JSON.stringify('production')
-      }
-    }),
     new webpack.optimize.UglifyJsPlugin({
       compressor: {
         warnings: false
