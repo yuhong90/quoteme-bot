@@ -1,10 +1,10 @@
 {
   "name": "quoteme-bot",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "simple telegram bot to send quotes to a react font-end",
   "main": "index.js",
   "scripts": {
-    "build": "webpack --config webpack.production.config.js",
+    "build": "NODE_ENV=production webpack --config webpack.production.config.js",
     "start": "pm2 start src/server/server.js --watch"
   },
   "repository": {
@@ -20,9 +20,9 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "moment": "^2.13.0",
     "react": "^15.0.1",
-    "react-dom": "^15.0.1",
-    "socket.io": "^1.4.5"
+    "react-dom": "^15.0.1"
   },
   "devDependencies": {
     "babel-core": "^6.7.6",
@@ -54,6 +54,7 @@
     "pm2": "^1.1.2",
     "react-transform-hmr": "^1.0.4",
     "style-loader": "^0.13.1",
+    "socket.io": "^1.4.5",
     "webpack": "^1.12.15",
     "webpack-dev-middleware": "^1.6.1",
     "webpack-hot-middleware": "^2.10.0"
