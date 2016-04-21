@@ -8,12 +8,12 @@ export default class App extends React.Component {
 
     var timeNow = Math.floor(Date.now() / 1000);
 
-    this.state = { quote: { created_at: timeNow, user: {name: 'account'}, text: 'Waiting for quote...', photo: '' } };
+    this.state = { quote: { created_at: timeNow, user: {name: 'account', profilePic: ''}, text: 'Waiting for quote...', photo: '' } };
   }
 
   componentDidMount() {
     const socket = IO();
-    socket.on('quote sent', (quote) => { 
+    socket.on('quote sent', (quote) => {
       this.addQuote(quote);
     });
   }
