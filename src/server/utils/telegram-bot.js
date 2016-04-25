@@ -40,8 +40,8 @@ bot.onText(/\/help/, function (msg) {
     bot.sendMessage(chatId, 'Help me help you, @' + fromName, opts);
 });
 
-bot.onText(/\/quote (.+)/, function (msg, match) {  
-  var fromName = getUsername(msg); 
+bot.onText(/\/quote (.+)/, function (msg, match) {
+  var fromName = getUsername(msg);
   var user = msg.from.id;
   var time = msg.date;
   var text = match[1];
@@ -93,7 +93,7 @@ bot.on('photo', function (msg) {
       console.log('photoURI: ' + photoURI + '\n' + 'profilePic: ' + profilePic);
       sendQuoteIfBoardEmpty(user, fromName, caption, time, profilePic, photoURI)
       sendMsgToUser(user, getQuoteResponse());
-      storeQuote(user, fromName, caption, time, profilePic, photoURI); 
+      storeQuote(user, fromName, caption, time, profilePic, photoURI);
     })
   });
 
@@ -135,10 +135,10 @@ function checkQuoteArrEmpty(){
   return (quotesArr.length === 0);
 }
 
-function sendQuoteIfBoardEmpty(id, user, content, time, profilePic, photo){ 
+function sendQuoteIfBoardEmpty(id, user, content, time, profilePic, photo){
   if (checkQuoteArrEmpty()){
     console.log('new quote sent, board was empty');
-    sendQuote(user, content, time, profilePic, photo);  
+    sendQuote(user, content, time, profilePic, photo);
   }else{
     console.log('new quote queued');
     queueNewQuote(id, user, content, time, profilePic, photo);
@@ -158,7 +158,7 @@ function storeQuote(user, name, content, time, profilePic, photo){
   console.log('stored quote count: ' + len);
 }
 
-function queueNewQuote(user, name, content, time, profilePic, photo){ 
+function queueNewQuote(user, name, content, time, profilePic, photo){
   var len = newQuotesArr.push({id:user, name:name, profilePic: profilePic, content:content, created_at: time, photo: photo});
   console.log('newQuotes in queue: ' + len);
 }
@@ -174,12 +174,12 @@ function clearNewQuoteQueue(){
   return false;
 }
 
-function RandomQuote(){ 
+function RandomQuote(){
   var len = quotesArr.length;
     if (!clearNewQuoteQueue() && len > 1){
       var rand = Math.floor((Math.random() * len));
       console.log('randQuote: ' + rand);
-      sendQuote(quotesArr[rand].name, quotesArr[rand].content, quotesArr[rand].created_at, quotesArr[rand].profilePic, quotesArr[rand].photo);      
+      sendQuote(quotesArr[rand].name, quotesArr[rand].content, quotesArr[rand].created_at, quotesArr[rand].profilePic, quotesArr[rand].photo);
     }
 }
 

@@ -67,7 +67,7 @@ module.exports = {
     new ExtractTextPlugin('[name].[chunkhash].css'),
     // generate html
     new HtmlWebpackPlugin({
-      template: 'node_modules/html-webpack-template/index.ejs',
+      template: 'src/templates/index.ejs',
       title: 'React app',
       appMountId: 'react',
       inject: false,

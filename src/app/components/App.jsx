@@ -1,5 +1,6 @@
 import React from 'react';
 import IO from 'socket.io-client';
+import Instructions from './Instructions';
 import Quote from './Quote';
 
 export default class App extends React.Component {
@@ -24,7 +25,10 @@ export default class App extends React.Component {
 
   render() {
     return (
-      <Quote quote={this.state.quote} />
+      <div className="fullHeight">
+        <Instructions />
+        <Quote quote={this.state.quote} />
+      </div>
     )
   }
 
