@@ -1,9 +1,10 @@
 const TelegramBot = require('node-telegram-bot-api');
-//const token = process.env['TELEGRAM_TOKEN_2'];
-const token = require('./settings').speakerbotToken;
+const token = process.env['TELEGRAM_TOKEN_2'];
+// const token = require('./settings').speakerbotToken;
 const telegram_filepath = 'https://api.telegram.org/file/bot';
 const bot = new TelegramBot(token, {polling: true});
 const Promise = require('bluebird');
+const rp = require('request-promise');
 var io;
 
 bot.setup = function(_io){
@@ -45,20 +46,33 @@ bot.onText(/\/quote (.+)/, function (msg, match) {
   var user = msg.from.id;
   var time = msg.date;
   var text = match[1];
-  var opts = {reply_to_message_id: msg.message_id};
 
-  bot.getUserProfilePhotos(user).then(function(profilePhoto){
-    //get medium quality photo
-    var fileid = profilePhoto.photos[0][1].file_id;
-
-    bot.getFile(fileid).then(function(file){
-      var photoURL = telegram_filepath + bot.token +'/'+ file.file_path;
-      sendQuoteIfBoardEmpty(user, fromName, text, time, photoURL, '');
+  bot.getUserProfilePhotos(user)
+    .then(function(profilePhoto) { return profilePhoto.photos[0][1].file_id})
+    .then(function(profilePhotoId) {
+      return bot.getFile(profilePhotoId);
+    })
+    .then(function(profilePhotoFile) {
+      return telegram_filepath + bot.token + '/' + profilePhotoFile.file_path;
+    })
+    .then(function(profilePhotoFileURI) {
+      return rp({
+        uri: profilePhotoFileURI,
+        encoding: null,
+        resolveWithFullResponse: true
+      });
+    })
+    .then(function(buffer) {
+      return encodeBase64(buffer);
+    })
+    .then(function(profilePhotoBase64) {
+      sendQuoteIfBoardEmpty(user, fromName, text, time, profilePhotoBase64, '');
       sendMsgToUser(user, getQuoteResponse());
-
-      storeQuote(user, fromName, text, time, photoURL, '');
+      storeQuote(user, fromName, text, time, profilePhotoBase64, '');
+    })
+    .catch(function(error) {
+      console.log(error);
     });
-  });
 });
 
 bot.onText(/\/echo (.+)/, function (msg, match) {
@@ -76,27 +90,44 @@ bot.on('photo', function (msg) {
   var caption = msg.caption;
   var time = msg.date;
 
-  bot.getUserProfilePhotos(user).then(function(profilePhoto){
-    var fileid = profilePhoto.photos[0][1].file_id;
-
-    Promise.join(
-      bot.getFileLink(photo).then(function(fileURI){
-        console.log('promised' + fileURI);
-        return fileURI;
+  Promise.join(
+    bot.getUserProfilePhotos(user)
+      .then(function(profilePhoto) { return profilePhoto.photos[0][1].file_id})
+      .then(function(profilePhotoId) {
+        return bot.getFile(profilePhotoId);
+      })
+      .then(function(profilePhotoFile) {
+        return telegram_filepath + bot.token + '/' + profilePhotoFile.file_path;
+      })
+      .then(function(profilePhotoFileURI) {
+        return rp({
+          uri: profilePhotoFileURI,
+          encoding: null,
+          resolveWithFullResponse: true
+        });
+      })
+      .then(function(buffer) {
+        return encodeBase64(buffer);
       }),
-
-      bot.getFile(fileid).then(function(file){
-        var photoURL = telegram_filepath + bot.token +'/'+ file.file_path;
-        return photoURL;
+    bot.getFileLink(photo)
+      .then(function(photoURI) {
+        return rp({
+          uri: photoURI,
+          encoding: null,
+          resolveWithFullResponse: true
+        });
+      })
+      .then(function(buffer) {
+        return encodeBase64(buffer);
       }),
-    function(photoURI, profilePic) {
-      console.log('photoURI: ' + photoURI + '\n' + 'profilePic: ' + profilePic);
-      sendQuoteIfBoardEmpty(user, fromName, caption, time, profilePic, photoURI)
+    function(profilePhotoBase64, photoBase64) {
+      sendQuoteIfBoardEmpty(user, fromName, caption, time, profilePhotoBase64, photoBase64)
       sendMsgToUser(user, getQuoteResponse());
-      storeQuote(user, fromName, caption, time, profilePic, photoURI);
-    })
-  });
-
+      storeQuote(user, fromName, caption, time, profilePhotoBase64, photoBase64);
+    }
+  ).catch(function(error) {
+      console.log(error);
+    });
 });
 
 bot.start = function startRandomQuotes(){
@@ -185,6 +216,11 @@ function RandomQuote(){
 
 function sendMsgToUser(fromId, resp){
   bot.sendMessage(fromId, resp);
+}
+
+function encodeBase64(response) {
+  var string = 'data:' + response.headers['content-type'] + ';base64,' + new Buffer(response.body).toString('base64');
+  return string;
 }
 
 module.exports = bot;
