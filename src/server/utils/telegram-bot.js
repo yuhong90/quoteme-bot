@@ -42,12 +42,19 @@ bot.onText(/\/help/, function (msg) {
 });
 
 bot.onText(/\/quote (.+)/, function (msg, match) {
-  var fromName = getUsername(msg);
-  var user = msg.from.id;
-  var time = msg.date;
-  var text = match[1];
+  var userId = msg.from.id;
+  var quote = {
+    user: {
+      id: userId,
+      name: getUsername(msg),
+      profilePic: ''
+    },
+    text: match[1],
+    created_at: msg.date,
+    photo: ''
+  }
 
-  bot.getUserProfilePhotos(user)
+  bot.getUserProfilePhotos(userId)
     .then(function(profilePhoto) { return profilePhoto.photos[0][1].file_id})
     .then(function(profilePhotoId) {
       return bot.getFile(profilePhotoId);
@@ -66,9 +73,11 @@ bot.onText(/\/quote (.+)/, function (msg, match) {
       return encodeBase64(buffer);
     })
     .then(function(profilePhotoBase64) {
-      sendQuoteIfBoardEmpty(user, fromName, text, time, profilePhotoBase64, '');
-      sendMsgToUser(user, getQuoteResponse());
-      storeQuote(user, fromName, text, time, profilePhotoBase64, '');
+      quote.user.profilePic = profilePhotoBase64;
+
+      sendQuoteIfBoardEmpty(quote);
+      sendMsgToUser(userId, getQuoteResponse());
+      storeQuote(quote);
     })
     .catch(function(error) {
       console.log(error);
@@ -84,14 +93,21 @@ bot.onText(/\/echo (.+)/, function (msg, match) {
 });
 
 bot.on('photo', function (msg) {
-  var user = msg.from.id;
-  var fromName = getUsername(msg);
+  var userId = msg.from.id;
   var photo = msg.photo[1].file_id;
-  var caption = msg.caption;
-  var time = msg.date;
+  var quote = {
+    user: {
+      id: userId,
+      name: getUsername(msg),
+      profilePic: ''
+    },
+    text: msg.caption,
+    created_at: msg.date,
+    photo: ''
+  }
 
   Promise.join(
-    bot.getUserProfilePhotos(user)
+    bot.getUserProfilePhotos(userId)
       .then(function(profilePhoto) { return profilePhoto.photos[0][1].file_id})
       .then(function(profilePhotoId) {
         return bot.getFile(profilePhotoId);
@@ -121,9 +137,12 @@ bot.on('photo', function (msg) {
         return encodeBase64(buffer);
       }),
     function(profilePhotoBase64, photoBase64) {
-      sendQuoteIfBoardEmpty(user, fromName, caption, time, profilePhotoBase64, photoBase64)
-      sendMsgToUser(user, getQuoteResponse());
-      storeQuote(user, fromName, caption, time, profilePhotoBase64, photoBase64);
+      quote.user.profilePic = profilePhotoBase64;
+      quote.photo = photoBase64;
+
+      sendQuoteIfBoardEmpty(quote);
+      sendMsgToUser(userId, getQuoteResponse());
+      storeQuote(quote);
     }
   ).catch(function(error) {
       console.log(error);
@@ -132,9 +151,23 @@ bot.on('photo', function (msg) {
 
 bot.start = function startRandomQuotes(){
   var timeNow = Math.floor(Date.now() / 1000);
+  var quote = {
+    user: {
+      id: '',
+      name: '',
+      profilePic: ''
+    },
+    text: '',
+    created_at: '',
+    photo: ''
+  }
   //start cycling thru quotes after 5 secs
   timeout = setTimeout(function(){
-    sendQuote('speakerbot', 'board ready - Send your quotes with /quotes <your quotes>!', timeNow, '', '');
+    quote.user.name = 'speakerbot';
+    quote.text = 'Hey! Send your quotes to this board with /quote <message>!';
+    quote.created_at = timeNow;
+
+    sendQuote(quote);
     timeInterval = setInterval(RandomQuote, 10000);
   }, 5000);
 }
@@ -166,31 +199,30 @@ function checkQuoteArrEmpty(){
   return (quotesArr.length === 0);
 }
 
-function sendQuoteIfBoardEmpty(id, user, content, time, profilePic, photo){
+function sendQuoteIfBoardEmpty(quote){
   if (checkQuoteArrEmpty()){
     console.log('new quote sent, board was empty');
-    sendQuote(user, content, time, profilePic, photo);
+    sendQuote(quote);
   }else{
     console.log('new quote queued');
-    queueNewQuote(id, user, content, time, profilePic, photo);
+    queueNewQuote(quote);
   }
 }
 
-function sendQuote(user, content, time, profilePic, photo){
-  var quote =  { user: {name: user, profilePic: profilePic}, text: content, created_at: time, photo: photo};
+function sendQuote(quote){
   io.emit('quote sent', quote);
 }
 
-function storeQuote(user, name, content, time, profilePic, photo){
+function storeQuote(quote){
   if (quotesArr.length >= maxQuoteCount){
      quotesArr.shift();
   }
-  var len = quotesArr.push({id:user, name:name, profilePic: profilePic, content:content, created_at: time, photo: photo});
+  var len = quotesArr.push(quote);
   console.log('stored quote count: ' + len);
 }
 
-function queueNewQuote(user, name, content, time, profilePic, photo){
-  var len = newQuotesArr.push({id:user, name:name, profilePic: profilePic, content:content, created_at: time, photo: photo});
+function queueNewQuote(quote){
+  var len = newQuotesArr.push(quote);
   console.log('newQuotes in queue: ' + len);
 }
 
@@ -198,7 +230,7 @@ function clearNewQuoteQueue(){
   if (newQuotesArr.length > 0){
       var quote = newQuotesArr.shift();
       console.log('newQuotes left: ' + newQuotesArr.length);
-      sendQuote(quote.name, quote.content, quote.created_at, quote.profilePic, quote.photo);
+      sendQuote(quote);
       // sendMsgToUser(quotesArr[rand].user, 'your quote is shown now!');
       return true;
   }
@@ -210,12 +242,12 @@ function RandomQuote(){
     if (!clearNewQuoteQueue() && len > 1){
       var rand = Math.floor((Math.random() * len));
       console.log('randQuote: ' + rand);
-      sendQuote(quotesArr[rand].name, quotesArr[rand].content, quotesArr[rand].created_at, quotesArr[rand].profilePic, quotesArr[rand].photo);
+      sendQuote(quotesArr[rand]);
     }
 }
 
-function sendMsgToUser(fromId, resp){
-  bot.sendMessage(fromId, resp);
+function sendMsgToUser(userId, resp){
+  bot.sendMessage(userId, resp);
 }
 
 function encodeBase64(response) {

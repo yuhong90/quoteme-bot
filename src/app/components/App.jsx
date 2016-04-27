@@ -9,7 +9,7 @@ export default class App extends React.Component {
 
     var timeNow = Math.floor(Date.now() / 1000);
 
-    this.state = { quote: { created_at: timeNow, user: {name: 'account', profilePic: ''}, text: 'Waiting for quote...', photo: '' } };
+    this.state = { quote: { created_at: timeNow, user: {id: '', name: 'account', profilePic: ''}, text: 'Waiting for quote...', photo: '' } };
   }
 
   componentDidMount() {
