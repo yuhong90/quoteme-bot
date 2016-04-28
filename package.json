@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "NODE_ENV=production webpack --config webpack.production.config.js",
-    "start": "pm2 start src/server/server.js --watch"
+    "start": "pm2 start src/server/server.js --watch --node-args='--harmony'"
   },
   "repository": {
     "type": "git",
