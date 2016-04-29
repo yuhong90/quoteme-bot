@@ -6,52 +6,48 @@ const server = new Hapi.Server();
 server.connection({ port: 3000 });
 
 const io = require('socket.io')(server.listener);
-const SpeakerBot = require('./utils/SpeakerBot');
 
-const token = process.env['TELEGRAM_TOKEN_2'];
-const options = { polling: true };
-
-const speakerBot = new SpeakerBot(token, options, io);
-
-server.register([{
-    register: WebpackPlugin,
-    options: './webpack.dev.config.js'
-  },{
-    register: Inert,
-    options: {}
-  }], (err) => {
-  if (err) {
-    throw err;
-  }
-
-  server.route({
-    method: 'GET',
-    path: '/{param*}',
-    handler: {
-      directory: {
-        path: 'build'
-      }
-    }
-  });
-
-  server.route({
-    method: 'GET',
-    path: '/build/{path*}',
-    handler: {
-      directory: {
-        path: 'build'
-      }
-    }
-  });
-
-  server.start((err) => {
+var start = function() {
+  server.register([{
+      register: WebpackPlugin,
+      options: './webpack.dev.config.js'
+    },{
+      register: Inert,
+      options: {}
+    }], (err) => {
     if (err) {
       throw err;
     }
 
-    console.log('Server running at:', server.info.uri);
-  });
-});
+    server.route({
+      method: 'GET',
+      path: '/{param*}',
+      handler: {
+        directory: {
+          path: 'build'
+        }
+      }
+    });
 
-speakerBot.getMe();
-speakerBot.init();
+    server.route({
+      method: 'GET',
+      path: '/build/{path*}',
+      handler: {
+        directory: {
+          path: 'build'
+        }
+      }
+    });
+
+    server.start((err) => {
+      if (err) {
+        throw err;
+      }
+
+      console.log('Server running at:', server.info.uri);
+    });
+  });
+}
+
+exports.start = start;
+exports.io = io;

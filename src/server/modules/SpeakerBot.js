@@ -2,17 +2,14 @@ const TelegramBot = require('node-telegram-bot-api');
 const Promise = require('bluebird');
 const rp = require('request-promise');
 
+const QuoteSystem = require('./QuoteSystem');
+const quoteSystem = new QuoteSystem;
+
 class SpeakerBot extends TelegramBot {
-  constructor(token, options, io) {
+  constructor(token, options) {
     super(token, options);
-    this._io = io;
-    this.quotesArray = [];
-    this.newQuotesArray = [];
-    this.timeOut = {};
-    this.timeInterval = {};
     this._config = {
       token: token,
-      maxQuoteCount: 30,
       telegram_filepath: 'https://api.telegram.org/file/bot'
     };
   }
@@ -32,47 +29,8 @@ class SpeakerBot extends TelegramBot {
     return firstlastname;
   }
 
-  quoteArrayIsEmpty() {
-    return (this.quotesArray.length === 0);
-  }
-
-  getQuoteResponse() {
-    if (this.newQuotesArray.length === 0) {
-      return 'Done! Your quote will be shown on the board now!';
-    } else {
-      return 'Done! Your quote will be queued behind ' + this.newQuotesArray.length + ' quote(s)!';
-    }
-  }
-
-  sendQuoteIfBoardEmpty(quote) {
-    if (this.quoteArrayIsEmpty()) {
-      console.log('new quote sent, board was empty');
-      this.sendQuote(quote);
-    } else {
-      console.log('new quote queued');
-      this.queueNewQuote(quote);
-    }
-  }
-
-  queueNewQuote(quote) {
-    var len = this.newQuotesArray.push(quote);
-    console.log('newQuotes in queue: ' + len);
-  }
-
   sendMsgToUser(userId, resp) {
     super.sendMessage(userId, resp);
-  }
-
-  storeQuote(quote) {
-    if (this.quotesArray.length >= this._config.maxQuoteCount) {
-      this.quotesArray.shift();
-    } else {
-      this.quotesArray.push(quote);
-    }
-  }
-
-  sendQuote(quote) {
-    this._io.emit('quote sent', quote);
   }
 
   welcomeMessage(message) {
@@ -137,9 +95,7 @@ class SpeakerBot extends TelegramBot {
       })
       .then((profilePhotoBase64) =>{
         quote.user.profilePic = profilePhotoBase64;
-        this.sendQuoteIfBoardEmpty(quote);
-        this.sendMsgToUser(userId, this.getQuoteResponse());
-        this.storeQuote(quote);
+        this.sendMsgToUser(userId, quoteSystem.queue(quote));
       })
       .catch((error) => {
         console.log(error);
@@ -193,10 +149,7 @@ class SpeakerBot extends TelegramBot {
       (profilePhotoBase64, photoBase64) => {
         quote.user.profilePic = profilePhotoBase64;
         quote.photo = photoBase64;
-
-        this.sendQuoteIfBoardEmpty(quote);
-        this.sendMsgToUser(userId, this.getQuoteResponse());
-        this.storeQuote(quote);
+        this.sendMsgToUser(userId, quoteSystem.queue(quote));
       }
     ).catch((error) => {
         console.log(error);
@@ -207,50 +160,6 @@ class SpeakerBot extends TelegramBot {
     super.getMe().then(function(me) {
       console.log('Hi my botname is %s!', me.username);
     });
-  }
-
-  clearNewQuoteQueue() {
-    if (this.newQuotesArray.length > 0){
-      var quote = this.newQuotesArray.shift();
-      console.log('newQuotes left: ' + this.newQuotesArray.length);
-      this.sendQuote(quote);
-      // sendMsgToUser(quotesArr[rand].user, 'your quote is shown now!');
-      return true;
-    }
-    return false;
-  }
-
-  getRandomQuote() {
-    var len = this.quotesArray.length;
-    if (!this.clearNewQuoteQueue() && len > 1){
-      var rand = Math.floor((Math.random() * len));
-      console.log('randQuote: ' + rand);
-      this.sendQuote(this.quotesArray[rand]);
-    }
-    this.newQuotesArray.shift();
-  }
-
-  startRandomQuotes() {
-    var timeNow = Math.floor(Date.now() / 1000);
-    var quote = {
-      user: {
-        id: '',
-        name: '',
-        profilePic: ''
-      },
-      text: '',
-      created_at: '',
-      photo: ''
-    }
-
-    this.timeOut = setTimeout(() => {
-      quote.user.name = 'speakerbot';
-      quote.text = 'Hey! Send your quotes to this board with /quote <message>!';
-      quote.created_at = timeNow;
-
-      this.sendQuote(quote);
-      this.timeInterval = setInterval(() => { this.getRandomQuote() }, 10000);
-    }, 5000);
   }
 
   init() {
@@ -274,7 +183,7 @@ class SpeakerBot extends TelegramBot {
       this.processPhoto(message);
     });
 
-    this.startRandomQuotes();
+    quoteSystem.init();
   }
 }
 
