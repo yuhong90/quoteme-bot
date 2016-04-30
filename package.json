@@ -51,6 +51,8 @@
     "html-webpack-template": "^4.0.0",
     "inert": "^3.2.0",
     "node-telegram-bot-api": "^0.21.1",
+    "pg": "^4.5.5",
+    "pg-promise": "^4.0.4",
     "pm2": "^1.1.2",
     "react-transform-hmr": "^1.0.4",
     "request-promise": "^3.0.0",

@@ -1,4 +1,5 @@
 const server = require('../server');
+const db = require('../db');
 
 class QuoteSystem {
   constructor() {
@@ -14,6 +15,13 @@ class QuoteSystem {
       this.quoteStore.shift();
     }
     this.quoteStore.push(quote);
+    db.one('INSERT INTO quotes(quote) VALUES($1)', [JSON.stringify(quote)] )
+      .then(function(data) {
+        console.log(data);
+      })
+      .catch(function(error) {
+        console.log(error);
+      });
   }
 
   queue(quote) {
@@ -48,6 +56,13 @@ class QuoteSystem {
   }
 
   init() {
+    db.any('SELECT quote from quotes')
+      .then((data) => {
+        this.quoteStore = data;
+      })
+      .catch(function(error) {
+        console.log(error);
+      });
     this._randomQuoteInterval = setInterval(() => { this.randomQuote() }, 10000);
     this._broadcastInterval = setInterval(() => { this.broadcast() }, 10000);
   }
