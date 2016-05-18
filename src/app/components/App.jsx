@@ -1,5 +1,6 @@
 import React from 'react';
 import IO from 'socket.io-client';
+import Instructions from './Instructions';
 import Quote from './Quote';
 
 export default class App extends React.Component {
@@ -8,7 +9,13 @@ export default class App extends React.Component {
 
     var timeNow = Math.floor(Date.now() / 1000);
 
-    this.state = { quote: { created_at: timeNow, user: {name: 'account', profilePic: ''}, text: 'Waiting for quote...', photo: '' } };
+    this.state = { store:
+      { quote:
+        {
+          created_at: timeNow, user: {id: '', name: 'speakerbot', profilePic: ''}, text: 'Get started by talking to @hive_speaker_bot!', photo: ''
+        }
+      }
+    };
   }
 
   componentDidMount() {
@@ -19,16 +26,19 @@ export default class App extends React.Component {
   }
 
   componentWillReceiveProps(newQuote) {
-    this.setState({ quote: newQuote });
+    this.setState({ store: newQuote });
   }
 
   render() {
     return (
-      <Quote quote={this.state.quote} />
+      <div className="fullHeight">
+        <Instructions />
+        <Quote quote={ this.state.store.quote } />
+      </div>
     )
   }
 
   addQuote(quote) {
-    this.setState({ quote: quote });
+    this.setState({ store: quote });
   }
 }

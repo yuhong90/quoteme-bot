@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "NODE_ENV=production webpack --config webpack.production.config.js",
-    "start": "pm2 start src/server/server.js --watch"
+    "start": "pm2 start src/server/index.js --watch --node-args='--harmony'"
   },
   "repository": {
     "type": "git",
@@ -54,10 +54,13 @@
     "html-webpack-template": "^4.0.0",
     "inert": "^3.2.0",
     "node-telegram-bot-api": "^0.21.1",
+    "pg": "^4.5.5",
+    "pg-promise": "^4.0.4",
     "pm2": "^1.1.2",
     "react-transform-hmr": "^1.0.4",
-    "style-loader": "^0.13.1",
+    "request-promise": "^3.0.0",
     "socket.io": "^1.4.5",
+    "style-loader": "^0.13.1",
     "webpack": "^1.12.15",
     "webpack-dev-middleware": "^1.6.1",
     "webpack-hot-middleware": "^2.10.0"

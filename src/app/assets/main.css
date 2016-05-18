@@ -1,14 +1,14 @@
 @import url(https://fonts.googleapis.com/css?family=Roboto:400,300,700);
 
-html {
+.fullHeight {
+  margin: 0;
+  padding: 0;
   width: 100%;
   height: 100%;
   overflow: hidden;
 }
 
-body {
-  margin: 0;
-  padding: 0 3rem;
+.alignVert {
   position: relative;
   top: 50%;
   transform: translateY(-50%);
@@ -35,9 +35,33 @@ time {
   font-weight: 400;
 }
 
+.quote-container {
+  display: flex;
+  padding: 0 3rem;
+}
+
+.right {
+  margin-left: 1rem;
+}
+
 .profilePhoto {
-  width: 100px;
-  border-radius: 30px;
+  width: 8rem;
+  border-radius: 1rem;
+}
+
+.instructions {
+  font-family: Roboto, sans-serif;
+  font-weight: 700;
+  color: #ABABAB;
+  position: fixed;
+  bottom: 3rem;
+  display: block;
+  width: 100%;
+  text-align: center;
+}
+
+.emphasis {
+  color: #666666;
 }
 
 @media screen and (min-width: 1920px) {
