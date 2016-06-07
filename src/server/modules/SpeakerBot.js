@@ -1,13 +1,13 @@
-const TelegramBot = require('node-telegram-bot-api');
+const Slimbot = require('slimbot');
 const Promise = require('bluebird');
 const rp = require('request-promise');
 
 const QuoteSystem = require('./QuoteSystem');
 const quoteSystem = new QuoteSystem;
 
-class SpeakerBot extends TelegramBot {
-  constructor(token, options) {
-    super(token, options);
+class SpeakerBot extends Slimbot {
+  constructor(token) {
+    super(token);
     this._config = {
       token: token,
       telegram_filepath: 'https://api.telegram.org/file/bot'
@@ -29,8 +29,8 @@ class SpeakerBot extends TelegramBot {
     return firstlastname;
   }
 
-  sendMsgToUser(userId, resp) {
-    super.sendMessage(userId, resp);
+  getFileLink(filePath) {
+    return this._config.telegram_filepath + this._config.token + '/' + filePath;
   }
 
   welcomeMessage(message) {
@@ -39,27 +39,6 @@ class SpeakerBot extends TelegramBot {
     var opts = {reply_to_message_id: message.message_id};
     var msg = 'Welcome ' + fromName + '. Get started with /quote <your quotes here>.';
     super.sendMessage(chatId, msg, opts);
-  }
-
-  helpMessage(message) {
-    var chatId = message.chat.id;
-    var fromName = this.getUsername(message);
-    var opts = {
-      reply_to_message_id: message.message_id,
-      reply_markup: JSON.stringify({
-        keyboard: [
-          ['/quote - share your quotes on screen'],
-          ['/echo - echo your msg to yourself']]
-        })
-    };
-    super.sendMessage(chatId, 'Help me help you, @' + fromName, opts);
-  }
-
-  echoMessage(message, match) {
-    var fromId = message.from.id;
-    var fromName = this.getUsername(message);
-    var resp = match[1];
-    super.sendMessage(fromId, fromName + ': mic test. ' + resp);
   }
 
   processQuote(message, match) {
@@ -76,26 +55,26 @@ class SpeakerBot extends TelegramBot {
     }
 
     super.getUserProfilePhotos(userId)
-      .then((profilePhoto) => { return profilePhoto.photos[0][1].file_id})
-      .then((profilePhotoId) => {
-        return super.getFile(profilePhotoId);
+      .then(resp => { return resp.result.photos[0][1].file_id })
+      .then(fileId => {
+        return this.getFile(fileId);
       })
-      .then((profilePhotoFile) => {
-        return this._config.telegram_filepath + this._config.token + '/' + profilePhotoFile.file_path;
+      .then(resp => {
+        return this.getFileLink(resp.result.file_path);
       })
-      .then((profilePhotoFileURI) => {
+      .then(profilePhotoFileURI => {
         return rp({
           uri: profilePhotoFileURI,
           encoding: null,
           resolveWithFullResponse: true
         });
       })
-      .then((response) => {
+      .then(response => {
         return this.encodeBase64(response);
       })
       .then((profilePhotoBase64) =>{
         quote.user.profilePic = profilePhotoBase64;
-        this.sendMsgToUser(userId, quoteSystem.queue(quote));
+        this.sendMessage(userId, quoteSystem.queue(quote));
       })
       .catch((error) => {
         console.log(error);
@@ -118,25 +97,28 @@ class SpeakerBot extends TelegramBot {
 
     Promise.join(
       super.getUserProfilePhotos(userId)
-        .then((profilePhoto) => { return profilePhoto.photos[0][1].file_id})
-        .then((profilePhotoId) => {
-          return super.getFile(profilePhotoId);
+        .then(resp => { return resp.result.photos[0][1].file_id })
+        .then(fileId => {
+          return this.getFile(fileId);
         })
-        .then((profilePhotoFile) => {
-          return this._config.telegram_filepath + this._config.token + '/' + profilePhotoFile.file_path;
+        .then(resp => {
+          return this.getFileLink(resp.result.file_path);
         })
-        .then((profilePhotoFileURI) => {
+        .then(profilePhotoFileURI => {
           return rp({
             uri: profilePhotoFileURI,
             encoding: null,
             resolveWithFullResponse: true
           });
         })
-        .then((response) => {
+        .then(response => {
           return this.encodeBase64(response);
         }),
-      super.getFileLink(photo)
-        .then((photoURI) => {
+      super.getFile(photo)
+        .then(resp => {
+          return this.getFileLink(resp.result.file_path);
+        })
+        .then(photoURI => {
           return rp({
             uri: photoURI,
             encoding: null,
@@ -149,39 +131,25 @@ class SpeakerBot extends TelegramBot {
       (profilePhotoBase64, photoBase64) => {
         quote.user.profilePic = profilePhotoBase64;
         quote.photo = photoBase64;
-        this.sendMsgToUser(userId, quoteSystem.queue(quote));
+        this.sendMessage(userId, quoteSystem.queue(quote));
       }
     ).catch((error) => {
         console.log(error);
       });
   }
 
-  getMe() {
-    super.getMe().then(function(me) {
-      console.log('Hi my botname is %s!', me.username);
-    });
-  }
-
   init() {
-    super.onText(/\/start/, (message) => {
-      this.welcomeMessage(message);
+    this.on('message', (message) => {
+      let re = /\quote/;
+      if (re.test(message.text)) {
+        let re = /\quote (.+)/;
+        this.processQuote(message, re.exec(message.text));
+      } else if (message.photo) {
+        this.processPhoto(message);
+      }
     });
 
-    super.onText(/\/help/, (message) => {
-      this.helpMessage(message);
-    });
-
-    super.onText(/\/echo (.+)/, (message, match) => {
-      this.echoMessage(message, match);
-    });
-
-    super.onText(/\/quote (.+)/, (message, match) => {
-      this.processQuote(message, match);
-    });
-
-    super.on('photo', (message) => {
-      this.processPhoto(message);
-    });
+    super.startPolling();
 
     quoteSystem.init();
   }

@@ -9,9 +9,11 @@ export default class App extends React.Component {
 
     var timeNow = Math.floor(Date.now() / 1000);
 
-    this.state = { quote:
-      {
-        created_at: timeNow, user: {id: '', name: 'speakerbot', profilePic: ''}, text: 'Get started by talking to @hive_speaker_bot!', photo: ''
+    this.state = { store:
+      { quote:
+        {
+          created_at: timeNow, user: {id: '', name: 'speakerbot', profilePic: ''}, text: 'Get started by talking to @hive_speaker_bot!', photo: ''
+        }
       }
     };
   }
@@ -24,7 +26,7 @@ export default class App extends React.Component {
   }
 
   componentWillReceiveProps(newQuote) {
-    this.setState({ store: newQuote });
+    this.setState({ store: { quote: newQuote } });
   }
 
   render() {
@@ -36,7 +38,7 @@ export default class App extends React.Component {
     )
   }
 
-  addQuote(quote) {
-    this.setState({ store: quote });
+  addQuote(newQuote) {
+    this.setState({ store: { quote: newQuote } });
   }
 }
