@@ -47,7 +47,9 @@ module.exports = {
         test: /\.jsx?$/,
         loader: 'babel',
         include: PATHS.app
-      }
+      },
+      { test: /\.json$/,
+        loader: 'json' }
     ]
   },
   // devtool: 'source-map',
