@@ -20,13 +20,9 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "google-auth-library": "^0.9.8",
-    "googleapi": "^1.0.2",
-    "googleapis": "^7.1.0",
     "moment": "^2.13.0",
     "react": "^15.1.0",
-    "react-dom": "^15.1.0",
-    "slimbot": "^0.1.3"
+    "react-dom": "^15.1.0"
   },
   "devDependencies": {
     "babel-core": "^6.9.1",
@@ -63,7 +59,11 @@
     "style-loader": "^0.13.1",
     "webpack": "^1.13.1",
     "webpack-dev-middleware": "^1.6.1",
-    "webpack-hot-middleware": "^2.10.0"
+    "webpack-hot-middleware": "^2.10.0",
+    "google-auth-library": "^0.9.8",
+    "googleapi": "^1.0.2",
+    "googleapis": "^7.1.0",
+    "slimbot": "^0.1.3"
   },
   "bugs": {
     "url": "https://github.com/edisonchee/quoteme-bot/issues"

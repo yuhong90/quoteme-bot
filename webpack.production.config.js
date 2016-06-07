@@ -77,6 +77,7 @@ module.exports = {
       names: ['vendor', 'manifest']
     }),
     new webpack.optimize.OccurrenceOrderPlugin(true),
+    new webpack.optimize.OccurrenceOrderPlugin(true),
     new webpack.optimize.UglifyJsPlugin({
       compressor: {
         warnings: false
