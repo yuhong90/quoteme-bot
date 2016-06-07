@@ -9,11 +9,9 @@ export default class App extends React.Component {
 
     var timeNow = Math.floor(Date.now() / 1000);
 
-    this.state = { store:
-      { quote:
-        {
-          created_at: timeNow, user: {id: '', name: 'speakerbot', profilePic: ''}, text: 'Get started by talking to @hive_speaker_bot!', photo: ''
-        }
+    this.state = { quote:
+      {
+        created_at: timeNow, user: {id: '', name: 'speakerbot', profilePic: ''}, text: 'Get started by talking to @hive_speaker_bot!', photo: ''
       }
     };
   }
