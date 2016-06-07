@@ -6,6 +6,10 @@ Simple Telegram bot to send messages and images to a React front-end via command
 
 ### Start Dev Server
 ```javascript
+// grab dependencies
+npm i
+
+// start the bot
 npm start
 ```
 Runs Hapi server at [http://localhost:3000](http://localhost:3000) using pm2.
